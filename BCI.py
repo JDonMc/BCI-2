@@ -9,31 +9,18 @@ import os
 import numpy as np
 import pandas as pd
 import string
+import codecs
 # Need to cycle through below and save the accuracy over P from 1->Max number of recordings per person
 # 1000 Hz 
 home = '/Users/jackmclovin/GitHub/BCI 2/'
-for folder in folders:
-	rootdir = '/Users/jackmclovin/GitHub/BCI 2/' + folder
 
-	for subdir, dirs, files in os.walk(rootdir):
-	    for file in files:
-	    	os.path.join(subdir, file)
-
-	    	with open(filename) as f:
-			    content = f.readlines()
-			# you may also want to remove whitespace characters like `\n` at the end of each line
-			content = [x.strip() for x in content]
-			text  = []
-			for line in content:
-				for x in line.split(' '):
-					text.append(x)
 # actual_file_name = home + to_str(n) + to_str(j) + to_str(k) + to_str(l) + '.pickle'
 # N is Number person 0-160, J is number of test 0-120, K is number of channels 0-63, L is transformation 0-10
 # ANN uses Predicts N from J, comparing different K's and L's over P percent learnt.
 # N max is 121, J is 40, k is 63, l is 11.
-person_max = 122
-test_max = 30
-channel_max = 64
+person_max = 12
+test_max = 28
+channel_max = 1
 transformation_max = 11
 
 
@@ -56,9 +43,9 @@ def dump_results(layers, channel_number, transformation_number, stats):
         os.makedirs(home + 'Results/')
     if not os.path.exists(home + 'Results/' + to_str(layers) + '/'):
         os.makedirs(home + 'Results/' + to_str(layers) + '/')
-    if not os.path.exists(home + 'Results/' + to_str(layers) + '/' + to_str(channel_number) + '/'):
-        os.makedirs(home + 'Results/' + to_str(layers) + '/' + to_str(channel_number) + '/')
-    actual_file_name = home + 'Results/' + to_str(layers) + '/' + to_str(channel_number) + '/' + \
+    if not os.path.exists(home + 'Results/' + to_str(layers) + '/'):
+        os.makedirs(home + 'Results/' + to_str(layers) + '/' )
+    actual_file_name = home + 'Results/' + to_str(layers) + '/' + \
                        to_str(transformation_number) + '.json'
     writefile = open(actual_file_name, 'w+')
     writefile.close()
@@ -71,32 +58,46 @@ def dump_results(layers, channel_number, transformation_number, stats):
 
 
 def import_inputs_train(inlength, max_people, max_tests, channel_number, transformation_number, proportion):
-    inputs = np.zeros([proportion * max_people, inlength])
-    counter = 0
-    for number_person in range(max_people):
-        for test_number in range(0, proportion):
-            importing_file = home + 'Transformed Data/' + to_str(number_person) + '/' + to_str(test_number) + '/' \
-                             + to_str(channel_number) + '/' + to_str(transformation_number) + '.json'
-            with open(importing_file, 'rb') as fp:
-                inputs[counter] = json.load(fp)
-            counter += 1
-    return inputs
+	inputs = np.zeros([proportion * max_people, inlength])
+	counter = 0
+	for folder in folders:
+		rootdir = '/Users/jackmclovin/GitHub/BCI 2/' + folder
+
+		for subdir, dirs, files in os.walk(rootdir):
+			for file in files:
+				if counter > 6:
+					break
+				if os.path.join(subdir, file).endswith('.cnt'):
+
+					with open(os.path.join(subdir, file), 'rb') as f:
+					    content = float(f.read())
+					# you may also want to remove whitespace characters like `\n` at the end of each line
+					inputs[counter] = content
+					counter += 1
+
+	return inputs
+
+
 # Takes in the initial Proportion of Max People
 # Finds the Inputs[test][pers] for a specific Channel and Transformation
 
 
 def import_inputs_test(inlength, max_persons, max_tests, channel_number, transformation_number, proportion):
-    inputs = np.zeros([max_persons * proportion, inlength])
-    counter = 0
-    for number_person in range(max_persons):
-        for test_number in range(proportion, proportion * 2):
-            importing_file = home + 'Transformed Data/' + to_str(number_person) + '/' + to_str(test_number) + '/' \
-                             + to_str(channel_number) + '/' + to_str(transformation_number) + '.json'
+	inputs = np.zeros([max_persons * proportion, inlength])
+	counter = 0
+	for folder in folders:
+		rootdir = '/Users/jackmclovin/GitHub/BCI 2/' + folder
 
-            with open(importing_file, 'rb') as fp:
-                inputs[counter] = json.load(fp)
-            counter += 1
-    return inputs
+		for subdir, dirs, files in os.walk(rootdir):
+			for file in files:
+				if os.path.join(subdir, file).endswith('.cnt'):
+					if counter > 6:
+						with open(os.path.join(subdir, file), 'rb') as f:
+							content = float(f.read())
+						# you may also want to remove whitespace characters like `\n` at the end of each line
+						inputs[counter] = content
+					counter += 1
+	return inputs
 # Takes in the remaining Proportion of Max people,
 # finds the inputs[test][pers] for a specific Channel and Transformation
 
