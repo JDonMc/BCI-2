@@ -10,9 +10,23 @@ import numpy as np
 import pandas as pd
 import string
 # Need to cycle through below and save the accuracy over P from 1->Max number of recordings per person
-
+# 1000 Hz 
 home = '/Users/jackmclovin/GitHub/BCI 2/'
+for folder in folders:
+	rootdir = '/Users/jackmclovin/GitHub/BCI 2/' + folder
 
+	for subdir, dirs, files in os.walk(rootdir):
+	    for file in files:
+	    	os.path.join(subdir, file)
+
+	    	with open(filename) as f:
+			    content = f.readlines()
+			# you may also want to remove whitespace characters like `\n` at the end of each line
+			content = [x.strip() for x in content]
+			text  = []
+			for line in content:
+				for x in line.split(' '):
+					text.append(x)
 # actual_file_name = home + to_str(n) + to_str(j) + to_str(k) + to_str(l) + '.pickle'
 # N is Number person 0-160, J is number of test 0-120, K is number of channels 0-63, L is transformation 0-10
 # ANN uses Predicts N from J, comparing different K's and L's over P percent learnt.
@@ -172,15 +186,16 @@ t = 10  # T is transformation count
 c = 0  # C is channel count
 # Each of these need to be maximally explored along the dimension of P, proportion, and A, accuracy
 for t in range(0, 11):
-    if t == 4 or t == 6:
-        inlength = 255
-    elif t == 5:
-        inlength = 254
-    elif t == 9:
-        inlength = 272
-    else:
-        inlength = 256
-    do_one_layer_transformation_channel(z, t, c, inlength)
+    for c in range(64):
+        if t == 4 or t == 6:
+            inlength = 255
+        elif t == 5:
+            inlength = 254
+        elif t == 9:
+            inlength = 272
+        else:
+            inlength = 256
+        do_one_layer_transformation_channel(z, t, c, inlength)
 
 
 
